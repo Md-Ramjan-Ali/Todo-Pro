@@ -1,14 +1,8 @@
 import { http, HttpResponse, delay } from "msw";
+import type { Todo, CreateTodoData } from "../schemas/todos";
 
 // Mock data
-interface User {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-}
-
-const users: User[] = [
+const users = [
   {
     id: "1",
     email: "test@example.com",
@@ -17,13 +11,23 @@ const users: User[] = [
   },
 ];
 
-let todos: any[] = [];
+let todos: Todo[] = [];
 let nextId = 1;
 
+// Helper function to simulate API delay and random failures
+const simulateApiCall = async () => {
+  await delay(300 + Math.random() * 200); // 300-500ms delay
+
+  if (Math.random() < 0.1) {
+    // 10% chance of failure
+    throw new Error("Server error");
+  }
+};
+
 export const handlers = [
-  // Register
+  // Auth handlers (existing)
   http.post("/auth/register", async ({ request }) => {
-    await delay(500);
+    await simulateApiCall();
     const { email, password, name } = (await request.json()) as any;
 
     if (users.find((user) => user.email === email)) {
@@ -42,9 +46,8 @@ export const handlers = [
     return HttpResponse.json({ user: userWithoutPassword, token });
   }),
 
-  // Login
   http.post("/auth/login", async ({ request }) => {
-    await delay(500);
+    await simulateApiCall();
     const { email, password } = (await request.json()) as any;
 
     const user = users.find(
@@ -63,34 +66,85 @@ export const handlers = [
     return HttpResponse.json({ user: userWithoutPassword, token });
   }),
 
-  // Get todos (protected)
+  // Todo handlers
   http.get("/todos", async ({ request }) => {
-    await delay(300);
+    await simulateApiCall();
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Simulate random failures
-    if (Math.random() < 0.1) {
-      return HttpResponse.json({ error: "Server error" }, { status: 500 });
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const search = url.searchParams.get("q");
+    const sortBy = url.searchParams.get("_sort");
+    const page = parseInt(url.searchParams.get("_page") || "1");
+
+    // Filter todos
+    let filteredTodos = [...todos];
+
+    if (status && status !== "all") {
+      filteredTodos = filteredTodos.filter((todo) => todo.status === status);
     }
 
-    return HttpResponse.json({ todos });
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredTodos = filteredTodos.filter(
+        (todo) =>
+          todo.title.toLowerCase().includes(searchLower) ||
+          todo.description?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Sort todos
+    if (sortBy) {
+      filteredTodos.sort((a, b) => {
+        if (sortBy === "dueDate") {
+          return (
+            new Date(a.dueDate || "").getTime() -
+            new Date(b.dueDate || "").getTime()
+          );
+        }
+        if (sortBy === "priority") {
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return (
+            (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) -
+            (priorityOrder[a.priority as keyof typeof priorityOrder] || 0)
+          );
+        }
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+    }
+
+    // Paginate (10 items per page)
+    const itemsPerPage = 10;
+    const startIndex = (page - 1) * itemsPerPage;
+    const paginatedTodos = filteredTodos.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
+
+    return HttpResponse.json({
+      todos: paginatedTodos,
+      totalCount: filteredTodos.length,
+      totalPages: Math.ceil(filteredTodos.length / itemsPerPage),
+      currentPage: page,
+    });
   }),
 
-  // Create todo (protected)
   http.post("/todos", async ({ request }) => {
-    await delay(500);
+    await simulateApiCall();
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const todoData = (await request.json()) as any;
-    const newTodo = {
+    const todoData = (await request.json()) as CreateTodoData;
+    const newTodo: Todo = {
       id: String(nextId++),
       ...todoData,
       createdAt: new Date().toISOString(),
@@ -99,5 +153,49 @@ export const handlers = [
 
     todos.push(newTodo);
     return HttpResponse.json(newTodo);
+  }),
+
+  http.patch("/todos/:id", async ({ request, params }) => {
+    await simulateApiCall();
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = params;
+    const updates = (await request.json()) as Partial<Todo>;
+    const todoIndex = todos.findIndex((todo) => todo.id === id);
+
+    if (todoIndex === -1) {
+      return HttpResponse.json({ error: "Todo not found" }, { status: 404 });
+    }
+
+    todos[todoIndex] = {
+      ...todos[todoIndex],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json(todos[todoIndex]);
+  }),
+
+  http.delete("/todos/:id", async ({ request, params }) => {
+    await simulateApiCall();
+    const authHeader = request.headers.get("Authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = params;
+    const todoIndex = todos.findIndex((todo) => todo.id === id);
+
+    if (todoIndex === -1) {
+      return HttpResponse.json({ error: "Todo not found" }, { status: 404 });
+    }
+
+    todos.splice(todoIndex, 1);
+    return HttpResponse.json({ message: "Todo deleted successfully" });
   }),
 ];
