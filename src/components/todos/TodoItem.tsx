@@ -111,12 +111,16 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
           </select>
 
           <button
-            onClick={() => dispatch(setSelectedTodo(todo.id))}
+            onClick={() => {
+              console.log('Setting selected todo:', todo.id);
+              dispatch(setSelectedTodo(todo.id));
+            }}
             className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
             aria-label="Edit todo"
           >
             <Edit3 className="w-4 h-4" />
           </button>
+
 
           <button
             onClick={handleDelete}

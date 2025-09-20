@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { setSelectedTodo } from '../features/todos/todosSlice';
+import { setSelectedTodo, clearSelectedTodo } from '../features/todos/todosSlice';
 import TodoList from '../components/todos/TodoList';
 import Filters from '../components/todos/Filters';
 import Pagination from '../components/todos/Pagination';
@@ -13,12 +13,8 @@ const Todos = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const handleEditTodo = (id: string) => {
-    dispatch(setSelectedTodo(id));
-  };
-
   const handleCloseModal = () => {
-    dispatch(setSelectedTodo(null));
+    dispatch(clearSelectedTodo()); // Use clearSelectedTodo instead of setSelectedTodo(null)
     setIsCreateModalOpen(false);
   };
 
@@ -44,12 +40,12 @@ const Todos = () => {
 
       <Filters />
       <TodoList
-        key={refreshTrigger} // This will force re-render when refreshTrigger changes
-        onUpdate={handleTodoChanged} // Pass the refresh function
+        key={refreshTrigger}
+        onUpdate={handleTodoChanged}
       />
       <Pagination onUpdate={handleTodoChanged} />
 
-      {/* Modals */}
+      {/* Create Modal */}
       {isCreateModalOpen && (
         <TodoForm
           onClose={handleCloseModal}
@@ -57,9 +53,10 @@ const Todos = () => {
         />
       )}
 
+      {/* Edit Modal - Only show when selectedTodoId exists */}
       {selectedTodoId && (
         <TodoForm
-          todo={undefined}
+          todoId={selectedTodoId} // Pass the todoId instead of undefined
           onClose={handleCloseModal}
           onTodoChanged={handleTodoChanged}
         />

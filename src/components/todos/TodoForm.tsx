@@ -1,22 +1,20 @@
-import { useEffect, useState } from 'react'; // Add useState import
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAppDispatch } from '../../hooks/redux';
 import { todoService } from '../../services/todoService';
-import { setSelectedTodo } from '../../features/todos/todosSlice';
 import { addToast } from '../../features/ui/uiSlice';
 import { createTodoSchema, type CreateTodoData, type Todo } from '../../schemas/todos';
 import { X, Calendar, Tag } from 'lucide-react';
 
 interface TodoFormProps {
-  todo?: Todo;
+  todoId?: string; // Change from todo to todoId
   onClose: () => void;
-  onTodoChanged?: () => void; // Callback for when todo is created or updated
+  onTodoChanged?: () => void;
 }
 
-const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
-  const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(false); // Add local loading state
+const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentTodo, setCurrentTodo] = useState<Todo | null>(null);
 
   const {
     register,
@@ -25,6 +23,7 @@ const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
     reset,
     setValue,
     watch,
+    reset: resetForm,
   } = useForm<CreateTodoData>({
     resolver: zodResolver(createTodoSchema),
     defaultValues: {
@@ -37,40 +36,61 @@ const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
     },
   });
 
+  // Load todo data when in edit mode
   useEffect(() => {
-    if (todo) {
-      reset({
-        title: todo.title,
-        description: todo.description || '',
-        status: todo.status,
-        priority: todo.priority || 'medium',
-        tags: todo.tags || [],
-        dueDate: todo.dueDate || '',
-      });
-    }
-  }, [todo, reset]);
+    const loadTodoData = async () => {
+      if (todoId) {
+        setIsLoading(true);
+        try {
+          // Get all todos and find the one with matching ID
+          const data = await todoService.getTodos({});
+          const todoToEdit = data.todos.find(todo => todo.id === todoId);
+
+          if (todoToEdit) {
+            setCurrentTodo(todoToEdit);
+            resetForm({
+              title: todoToEdit.title,
+              description: todoToEdit.description || '',
+              status: todoToEdit.status,
+              priority: todoToEdit.priority || 'medium',
+              tags: todoToEdit.tags || [],
+              dueDate: todoToEdit.dueDate || '',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load todo data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadTodoData();
+  }, [todoId, resetForm]);
 
   const onSubmit = async (data: CreateTodoData) => {
-    setIsLoading(true); // Set loading state
+    setIsLoading(true);
     try {
-      if (todo) {
-        await todoService.updateTodo(todo.id, data);
-        dispatch(addToast({ type: 'success', message: 'Todo updated!' }));
+      if (todoId && currentTodo) {
+        // Edit existing todo
+        await todoService.updateTodo(todoId, data);
+        addToast({ type: 'success', message: 'Todo updated!' });
       } else {
+        // Create new todo
         await todoService.createTodo(data);
-        dispatch(addToast({ type: 'success', message: 'Todo created!' }));
+        addToast({ type: 'success', message: 'Todo created!' });
       }
 
       if (onTodoChanged) {
-        onTodoChanged(); // Notify parent to refresh
+        onTodoChanged();
       }
 
       onClose();
-      reset();
+      resetForm();
     } catch (error: any) {
-      dispatch(addToast({ type: 'error', message: error.message || 'Failed to save todo' }));
+      addToast({ type: 'error', message: error.message || 'Failed to save todo' });
     } finally {
-      setIsLoading(false); // Clear loading state
+      setIsLoading(false);
     }
   };
 
@@ -90,7 +110,7 @@ const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {todo ? 'Edit Todo' : 'Create Todo'}
+            {todoId ? 'Edit Todo' : 'Create Todo'}
           </h2>
           <button
             onClick={onClose}
@@ -214,10 +234,10 @@ const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
             </button>
             <button
               type="submit"
-              disabled={isLoading} // Use the local loading state
+              disabled={isLoading}
               className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {isLoading ? 'Saving...' : todo ? 'Update' : 'Create'}
+              {isLoading ? 'Saving...' : todoId ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

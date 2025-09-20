@@ -29,7 +29,7 @@ const todosSlice = createSlice({
   reducers: {
     setStatusFilter: (state, action: PayloadAction<TodoStatus | "all">) => {
       state.filters.status = action.payload;
-      state.filters.page = 1; // Reset to first page when filter changes
+      state.filters.page = 1;
     },
     setSearchFilter: (state, action: PayloadAction<string>) => {
       state.filters.search = action.payload;
@@ -47,6 +47,9 @@ const todosSlice = createSlice({
     setSelectedTodo: (state, action: PayloadAction<string | null>) => {
       state.selectedTodoId = action.payload;
     },
+    clearSelectedTodo: (state) => {
+      state.selectedTodoId = null;
+    },
     clearFilters: (state) => {
       state.filters = initialState.filters;
     },
@@ -59,6 +62,7 @@ export const {
   setSortBy,
   setPage,
   setSelectedTodo,
+  clearSelectedTodo, // Export the new action
   clearFilters,
 } = todosSlice.actions;
 
