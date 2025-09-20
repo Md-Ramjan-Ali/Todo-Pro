@@ -11,6 +11,7 @@ const Todos = () => {
   const dispatch = useAppDispatch();
   const { selectedTodoId } = useAppSelector((state) => state.todos);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleEditTodo = (id: string) => {
     dispatch(setSelectedTodo(id));
@@ -19,6 +20,11 @@ const Todos = () => {
   const handleCloseModal = () => {
     dispatch(setSelectedTodo(null));
     setIsCreateModalOpen(false);
+  };
+
+  const handleTodoChanged = () => {
+    // Increment refresh trigger to force components to reload
+    setRefreshTrigger(prev => prev + 1);
   };
 
   return (
@@ -37,18 +43,25 @@ const Todos = () => {
       </div>
 
       <Filters />
-      <TodoList />
-      <Pagination />
+      <TodoList
+        key={refreshTrigger} // This will force re-render when refreshTrigger changes
+        onUpdate={handleTodoChanged} // Pass the refresh function
+      />
+      <Pagination onUpdate={handleTodoChanged} />
 
       {/* Modals */}
       {isCreateModalOpen && (
-        <TodoForm onClose={handleCloseModal} />
+        <TodoForm
+          onClose={handleCloseModal}
+          onTodoChanged={handleTodoChanged}
+        />
       )}
 
       {selectedTodoId && (
         <TodoForm
-          todo={undefined} // We'll fetch the todo data in the form component
+          todo={undefined}
           onClose={handleCloseModal}
+          onTodoChanged={handleTodoChanged}
         />
       )}
     </div>

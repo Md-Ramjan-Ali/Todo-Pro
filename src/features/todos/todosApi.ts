@@ -17,7 +17,12 @@ export const todosApi = createApi({
   tagTypes: ["Todo"],
   endpoints: (builder) => ({
     getTodos: builder.query<
-      { todos: Todo[] },
+      {
+        todos: Todo[];
+        totalCount: number;
+        totalPages: number;
+        currentPage: number;
+      },
       {
         page?: number;
         status?: string;
@@ -28,18 +33,22 @@ export const todosApi = createApi({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params.page) queryParams.append("_page", params.page.toString());
-        if (params.status) queryParams.append("status", params.status);
+        if (params.status && params.status !== "all")
+          queryParams.append("status", params.status);
         if (params.search) queryParams.append("q", params.search);
         if (params.sortBy) queryParams.append("_sort", params.sortBy);
 
-        return `todos?${queryParams.toString()}`;
+        const queryString = queryParams.toString();
+        return queryString ? `todos?${queryString}` : "todos";
       },
-      providesTags: ["Todo"],
-    }),
-
-    getTodo: builder.query<Todo, string>({
-      query: (id) => `todos/${id}`,
-      providesTags: ["Todo"],
+      // Provide tags for all possible variations of the query
+      providesTags: (result, error, arg) => [
+        { type: "Todo", id: "LIST" },
+        {
+          type: "Todo",
+          id: `LIST-${arg.page}-${arg.status}-${arg.search}-${arg.sortBy}`,
+        },
+      ],
     }),
 
     createTodo: builder.mutation<Todo, CreateTodoData>({
@@ -48,7 +57,8 @@ export const todosApi = createApi({
         method: "POST",
         body: newTodo,
       }),
-      invalidatesTags: ["Todo"],
+      // Invalidate all list queries
+      invalidatesTags: [{ type: "Todo", id: "LIST" }],
     }),
 
     updateTodo: builder.mutation<Todo, { id: string; data: UpdateTodoData }>({
@@ -57,7 +67,11 @@ export const todosApi = createApi({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["Todo"],
+      // Invalidate both the specific todo and the list
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Todo", id },
+        { type: "Todo", id: "LIST" },
+      ],
     }),
 
     deleteTodo: builder.mutation<void, string>({
@@ -65,7 +79,11 @@ export const todosApi = createApi({
         url: `todos/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Todo"],
+      // Invalidate both the specific todo and the list
+      invalidatesTags: (result, error, id) => [
+        { type: "Todo", id },
+        { type: "Todo", id: "LIST" },
+      ],
     }),
   }),
 });

@@ -1,24 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react'; // Add useState import
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-// import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { useAppDispatch } from '../../hooks/redux';
-import { useCreateTodoMutation, useUpdateTodoMutation } from '../../features/todos/todosApi';
-// import { setSelectedTodo } from '../../features/todos/todosSlice';
+import { todoService } from '../../services/todoService';
+import { setSelectedTodo } from '../../features/todos/todosSlice';
 import { addToast } from '../../features/ui/uiSlice';
 import { createTodoSchema, type CreateTodoData, type Todo } from '../../schemas/todos';
-// import { X, Calendar, Tag } from 'lucide-react';
-import { X} from 'lucide-react';
+import { X, Calendar, Tag } from 'lucide-react';
 
 interface TodoFormProps {
   todo?: Todo;
   onClose: () => void;
+  onTodoChanged?: () => void; // Callback for when todo is created or updated
 }
 
-const TodoForm = ({ todo, onClose }: TodoFormProps) => {
+const TodoForm = ({ todo, onClose, onTodoChanged }: TodoFormProps) => {
   const dispatch = useAppDispatch();
-  const [createTodo, { isLoading: isCreating }] = useCreateTodoMutation();
-  const [updateTodo, { isLoading: isUpdating }] = useUpdateTodoMutation();
+  const [isLoading, setIsLoading] = useState(false); // Add local loading state
 
   const {
     register,
@@ -26,6 +24,7 @@ const TodoForm = ({ todo, onClose }: TodoFormProps) => {
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm<CreateTodoData>({
     resolver: zodResolver(createTodoSchema),
     defaultValues: {
@@ -52,21 +51,26 @@ const TodoForm = ({ todo, onClose }: TodoFormProps) => {
   }, [todo, reset]);
 
   const onSubmit = async (data: CreateTodoData) => {
+    setIsLoading(true); // Set loading state
     try {
       if (todo) {
-        await updateTodo({ id: todo.id, data }).unwrap();
+        await todoService.updateTodo(todo.id, data);
         dispatch(addToast({ type: 'success', message: 'Todo updated!' }));
       } else {
-        await createTodo(data).unwrap();
+        await todoService.createTodo(data);
         dispatch(addToast({ type: 'success', message: 'Todo created!' }));
       }
+
+      if (onTodoChanged) {
+        onTodoChanged(); // Notify parent to refresh
+      }
+
       onClose();
       reset();
-    } catch (error) {
-      console.log(error);      dispatch(addToast({
-        type: 'error',
-        message: todo ? 'Failed to update todo' : 'Failed to create todo'
-      }));
+    } catch (error: any) {
+      dispatch(addToast({ type: 'error', message: error.message || 'Failed to save todo' }));
+    } finally {
+      setIsLoading(false); // Clear loading state
     }
   };
 
@@ -80,8 +84,6 @@ const TodoForm = ({ todo, onClose }: TodoFormProps) => {
     const currentTags = watch('tags') || [];
     setValue('tags', currentTags.filter((_, i) => i !== index));
   };
-
-  const watch = useForm<CreateTodoData>().watch;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -212,10 +214,10 @@ const TodoForm = ({ todo, onClose }: TodoFormProps) => {
             </button>
             <button
               type="submit"
-              disabled={isCreating || isUpdating}
+              disabled={isLoading} // Use the local loading state
               className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {isCreating || isUpdating ? 'Saving...' : todo ? 'Update' : 'Create'}
+              {isLoading ? 'Saving...' : todo ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

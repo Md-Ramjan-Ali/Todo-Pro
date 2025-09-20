@@ -1,24 +1,51 @@
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { setPage } from '../../features/todos/todosSlice';
-import { useGetTodosQuery } from '../../features/todos/todosApi';
+import { todoService } from '../../services/todoService';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-const Pagination = () => {
+interface PaginationProps {
+  onUpdate: () => void; // Add this prop
+}
+
+const Pagination = ({ onUpdate }: PaginationProps) => {
   const dispatch = useAppDispatch();
   const { filters } = useAppSelector((state) => state.todos);
-  const { data } = useGetTodosQuery({
-    page: filters.page,
-    status: filters.status !== 'all' ? filters.status : undefined,
-    search: filters.search,
-    sortBy: filters.sortBy,
+  const [paginationData, setPaginationData] = useState({
+    totalCount: 0,
+    totalPages: 0,
+    currentPage: 1
   });
 
-  if (!data || data.totalPages <= 1) {
-    return null;
-  }
+  useEffect(() => {
+    const loadPaginationData = async () => {
+      try {
+        const data = await todoService.getTodos({
+          page: filters.page,
+          status: filters.status !== 'all' ? filters.status : undefined,
+          search: filters.search,
+          sortBy: filters.sortBy,
+        });
+
+        setPaginationData({
+          totalCount: data.totalCount,
+          totalPages: data.totalPages,
+          currentPage: data.currentPage
+        });
+      } catch (error) {
+        console.error('Failed to load pagination data:', error);
+      }
+    };
+
+    loadPaginationData();
+  }, [filters, onUpdate]);
 
   const currentPage = filters.page;
-  const totalPages = data.totalPages;
+  const totalPages = paginationData.totalPages;
+
+  if (!paginationData || totalPages <= 1) {
+    return null;
+  }
 
   const getPageNumbers = () => {
     const pages = [];
@@ -41,17 +68,22 @@ const Pagination = () => {
     return pages;
   };
 
+  const handlePageChange = (newPage: number) => {
+    dispatch(setPage(newPage));
+    onUpdate(); // Notify parent to refresh
+  };
+
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="text-sm text-gray-700 dark:text-gray-300">
         Showing <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> to{' '}
-        <span className="font-medium">{Math.min(currentPage * 10, data.totalCount || 0)}</span> of{' '}
-        <span className="font-medium">{data.totalCount || 0}</span> results
+        <span className="font-medium">{Math.min(currentPage * 10, paginationData.totalCount || 0)}</span> of{' '}
+        <span className="font-medium">{paginationData.totalCount || 0}</span> results
       </div>
 
       <div className="flex items-center gap-1">
         <button
-          onClick={() => dispatch(setPage(currentPage - 1))}
+          onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="p-2 rounded-md border border-gray-300 text-gray-400 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
         >
@@ -61,7 +93,7 @@ const Pagination = () => {
         {getPageNumbers().map((page, index) => (
           <button
             key={index}
-            onClick={() => typeof page === 'number' && dispatch(setPage(page))}
+            onClick={() => typeof page === 'number' && handlePageChange(page)}
             disabled={page === '...'}
             className={`min-w-[2.5rem] px-2 py-1 rounded-md border text-sm ${page === currentPage
                 ? 'border-blue-500 bg-blue-500 text-white'
@@ -73,7 +105,7 @@ const Pagination = () => {
         ))}
 
         <button
-          onClick={() => dispatch(setPage(currentPage + 1))}
+          onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="p-2 rounded-md border border-gray-300 text-gray-400 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
         >

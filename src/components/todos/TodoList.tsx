@@ -1,17 +1,49 @@
+import { useState, useEffect } from 'react';
 import { useAppSelector } from '../../hooks/redux';
-import { useGetTodosQuery } from '../../features/todos/todosApi';
+import { todoService } from '../../services/todoService';
 import TodoItem from './TodoItem';
 import TodoListSkeleton from './TodoListSkeleton';
 import EmptyState from '../ui/EmptyState';
+import type { Todo } from '../../schemas/todos';
 
-const TodoList = () => {
+interface TodoListProps {
+  onUpdate: () => void; // Add this prop
+}
+
+const TodoList = ({ onUpdate }: TodoListProps) => {
   const { filters } = useAppSelector((state) => state.todos);
-  const { data, error, isLoading } = useGetTodosQuery({
-    page: filters.page,
-    status: filters.status !== 'all' ? filters.status : undefined,
-    search: filters.search,
-    sortBy: filters.sortBy,
-  });
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadTodos = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await todoService.getTodos({
+        page: filters.page,
+        status: filters.status !== 'all' ? filters.status : undefined,
+        search: filters.search,
+        sortBy: filters.sortBy,
+      });
+
+      setTodos(data.todos);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load todos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTodos();
+  }, [filters]);
+
+  const handleTodoUpdate = () => {
+    loadTodos(); // Refresh the todos list
+    onUpdate(); // Notify parent component
+  };
 
   if (isLoading) {
     return <TodoListSkeleton />;
@@ -21,13 +53,13 @@ const TodoList = () => {
     return (
       <EmptyState
         title="Error loading todos"
-        description="There was a problem loading your todos. Please try again."
+        description={error}
         icon="alert"
       />
     );
   }
 
-  if (!data?.todos || data.todos.length === 0) {
+  if (todos.length === 0) {
     return (
       <EmptyState
         title="No todos found"
@@ -42,8 +74,12 @@ const TodoList = () => {
 
   return (
     <div className="space-y-3">
-      {data.todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} />
+      {todos.map((todo) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onUpdate={handleTodoUpdate} // Pass the refresh function
+        />
       ))}
     </div>
   );

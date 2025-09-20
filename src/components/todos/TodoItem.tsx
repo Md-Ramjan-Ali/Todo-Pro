@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppDispatch } from '../../hooks/redux';
-import { useUpdateTodoMutation, useDeleteTodoMutation } from '../../features/todos/todosApi';
+import { todoService } from '../../services/todoService';
 import { setSelectedTodo } from '../../features/todos/todosSlice';
 import { addToast } from '../../features/ui/uiSlice';
 import type { Todo } from '../../schemas/todos';
@@ -8,12 +8,11 @@ import { Edit3, Trash2, Calendar, Tag, Clock } from 'lucide-react';
 
 interface TodoItemProps {
   todo: Todo;
+  onUpdate: () => void; // Make this required
 }
 
-const TodoItem = ({ todo }: TodoItemProps) => {
+const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
   const dispatch = useAppDispatch();
-  const [updateTodo] = useUpdateTodoMutation();
-  const [deleteTodo] = useDeleteTodoMutation();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const statusColors = {
@@ -30,11 +29,11 @@ const TodoItem = ({ todo }: TodoItemProps) => {
 
   const handleStatusChange = async (newStatus: Todo['status']) => {
     try {
-      await updateTodo({ id: todo.id, data: { status: newStatus } }).unwrap();
+      await todoService.updateTodo(todo.id, { status: newStatus });
       dispatch(addToast({ type: 'success', message: 'Todo updated!' }));
-    } catch (error) {
-      console.log(error);
-      dispatch(addToast({ type: 'error', message: 'Failed to update todo' }));
+      onUpdate(); // Trigger refresh
+    } catch (error: any) {
+      dispatch(addToast({ type: 'error', message: error.message || 'Failed to update todo' }));
     }
   };
 
@@ -43,11 +42,11 @@ const TodoItem = ({ todo }: TodoItemProps) => {
 
     setIsDeleting(true);
     try {
-      await deleteTodo(todo.id).unwrap();
+      await todoService.deleteTodo(todo.id);
       dispatch(addToast({ type: 'success', message: 'Todo deleted!' }));
-    } catch (error) {
-      console.log(error);
-      dispatch(addToast({ type: 'error', message: 'Failed to delete todo' }));
+      onUpdate(); // Trigger refresh
+    } catch (error: any) {
+      dispatch(addToast({ type: 'error', message: error.message || 'Failed to delete todo' }));
     } finally {
       setIsDeleting(false);
     }
