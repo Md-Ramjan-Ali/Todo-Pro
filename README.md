@@ -29,7 +29,7 @@ A feature-rich, responsive todo management application built with React 18, Type
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/Md-Ramjan-Ali/Todo-Pro
 cd todo-pro
 ```
 2. Install dependencies:
