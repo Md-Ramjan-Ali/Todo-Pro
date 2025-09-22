@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { setSelectedTodo, clearSelectedTodo } from '../features/todos/todosSlice';
+import {  clearSelectedTodo } from '../features/todos/todosSlice';
 import TodoList from '../components/todos/TodoList';
 import Filters from '../components/todos/Filters';
 import Pagination from '../components/todos/Pagination';
@@ -15,7 +15,7 @@ const Todos = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleCloseModal = () => {
-    dispatch(clearSelectedTodo()); // Use clearSelectedTodo instead of setSelectedTodo(null)
+    dispatch(clearSelectedTodo()); 
     setIsCreateModalOpen(false);
   };
 
