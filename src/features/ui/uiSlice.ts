@@ -11,12 +11,21 @@ interface UIState {
   toasts: Toast[];
 }
 
+// Get initial theme from localStorage or system preference
 const getInitialTheme = (): "light" | "dark" => {
+  if (typeof window === "undefined") return "light";
+
   const savedTheme = localStorage.getItem("theme");
-  if (savedTheme) return savedTheme as "light" | "dark";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  // Check system preference
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "dark";
+  }
+
+  return "light";
 };
 
 const initialState: UIState = {
@@ -30,11 +39,9 @@ const uiSlice = createSlice({
   reducers: {
     setTheme: (state, action: PayloadAction<"light" | "dark">) => {
       state.theme = action.payload;
-      localStorage.setItem("theme", action.payload);
-      document.documentElement.classList.toggle(
-        "dark",
-        action.payload === "dark"
-      );
+    },
+    toggleTheme: (state) => {
+      state.theme = state.theme === "light" ? "dark" : "light";
     },
     addToast: (state, action: PayloadAction<Omit<Toast, "id">>) => {
       const id = Math.random().toString(36).substring(2, 9);
@@ -48,5 +55,5 @@ const uiSlice = createSlice({
   },
 });
 
-export const { setTheme, addToast, removeToast } = uiSlice.actions;
+export const { setTheme, toggleTheme, addToast, removeToast } = uiSlice.actions;
 export default uiSlice.reducer;

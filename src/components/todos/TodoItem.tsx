@@ -104,6 +104,7 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
             value={todo.status}
             onChange={(e) => handleStatusChange(e.target.value as Todo['status'])}
             className="text-xs border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            aria-label={`Change status for ${todo.title}`}
           >
             <option value="todo">To Do</option>
             <option value="in_progress">In Progress</option>
@@ -111,22 +112,18 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
           </select>
 
           <button
-            onClick={() => {
-              console.log('Setting selected todo:', todo.id);
-              dispatch(setSelectedTodo(todo.id));
-            }}
-            className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-            aria-label="Edit todo"
+            onClick={() => dispatch(setSelectedTodo(todo.id))}
+            className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            aria-label={`Edit todo: ${todo.title}`}
           >
             <Edit3 className="w-4 h-4" />
           </button>
 
-
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
-            aria-label="Delete todo"
+            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+            aria-label={`Delete todo: ${todo.title}`}
           >
             <Trash2 className="w-4 h-4" />
           </button>

@@ -1,15 +1,14 @@
-import { useAppSelector, useAppDispatch } from '../../hooks/redux'; // Updated import
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../../features/auth/authSlice';
-import { setTheme } from '../../features/ui/uiSlice';
-import { addToast } from '../../features/ui/uiSlice';
+import { toggleTheme, addToast } from '../../features/ui/uiSlice';
 import { Sun, Moon, LogOut, User } from 'lucide-react';
 
 const Header = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth); // Updated hook
-  const { theme } = useAppSelector((state) => state.ui); // Updated hook
+  const { user } = useAppSelector((state) => state.auth);
+  const { theme } = useAppSelector((state) => state.ui);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -17,27 +16,26 @@ const Header = () => {
     navigate('/login');
   };
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    dispatch(setTheme(newTheme));
+  const handleThemeToggle = () => {
+    dispatch(toggleTheme());
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link
             to="/app/todos"
-            className="text-xl font-bold text-gray-900 dark:text-white"
+            className="text-xl font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md transition-colors duration-200"
           >
             Todo Pro
           </Link>
 
           <div className="flex items-center space-x-4">
             <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-              aria-label="Toggle theme"
+              onClick={handleThemeToggle}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             >
               {theme === 'light' ? (
                 <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -46,14 +44,14 @@ const Header = () => {
               )}
             </button>
 
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
-              <User className="w-4 h-4" />
-              <span>{user?.name}</span>
+            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200">
+              <User className="w-4 h-4" aria-hidden="true" />
+              <span aria-label="User name">{user?.name}</span>
             </div>
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-gray-600 dark:text-gray-300 transition-colors duration-200"
               aria-label="Logout"
             >
               <LogOut className="w-5 h-5" />
