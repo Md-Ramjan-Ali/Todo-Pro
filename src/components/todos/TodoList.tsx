@@ -7,7 +7,7 @@ import EmptyState from '../ui/EmptyState';
 import type { Todo } from '../../schemas/todos';
 
 interface TodoListProps {
-  onUpdate: () => void; // Add this prop
+  onUpdate: () => void;
 }
 
 const TodoList = ({ onUpdate }: TodoListProps) => {
@@ -78,7 +78,7 @@ const TodoList = ({ onUpdate }: TodoListProps) => {
         <TodoItem
           key={todo.id}
           todo={todo}
-          onUpdate={handleTodoUpdate} // Pass the refresh function
+          onUpdate={handleTodoUpdate}
         />
       ))}
     </div>
