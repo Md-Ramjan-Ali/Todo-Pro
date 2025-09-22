@@ -5,20 +5,7 @@ import {
 } from "../schemas/todos";
 
 // Simple in-memory storage as fallback
-let todos: Todo[] = [
-  // {
-  //   id: "1",
-  //   title: "Welcome to Todo Pro!",
-  //   description:
-  //     "This is a sample todo. The mock API might not be working properly.",
-  //   status: "todo",
-  //   priority: "medium",
-  //   tags: ["welcome"],
-  //   dueDate: "2024-01-31",
-  //   createdAt: new Date().toISOString(),
-  //   updatedAt: new Date().toISOString(),
-  // },
-];
+let todos: Todo[] = [];
 
 export const todoService = {
   // Get todos with filtering, sorting, and pagination

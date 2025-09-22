@@ -8,7 +8,7 @@ import { X } from 'lucide-react';
 import { useAppSelector } from '../../hooks/redux';
 
 interface TodoFormProps {
-  todoId?: string; // Change from todo to todoId
+  todoId?: string; 
   onClose: () => void;
   onTodoChanged?: () => void;
 }

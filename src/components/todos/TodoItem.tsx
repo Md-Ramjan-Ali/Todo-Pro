@@ -8,7 +8,7 @@ import { Edit3, Trash2, Calendar, Tag, Clock } from 'lucide-react';
 
 interface TodoItemProps {
   todo: Todo;
-  onUpdate: () => void; // Make this required
+  onUpdate: () => void; 
 }
 
 const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {

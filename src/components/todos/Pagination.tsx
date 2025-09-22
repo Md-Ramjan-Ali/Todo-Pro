@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface PaginationProps {
-  onUpdate: () => void; // Add this prop
+  onUpdate: () => void; 
 }
 
 const Pagination = ({ onUpdate }: PaginationProps) => {
@@ -71,7 +71,7 @@ const Pagination = ({ onUpdate }: PaginationProps) => {
 
   const handlePageChange = (newPage: number) => {
     dispatch(setPage(newPage));
-    onUpdate(); // Notify parent to refresh
+    onUpdate(); 
   };
 
   return (
