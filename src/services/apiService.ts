@@ -1,4 +1,3 @@
-import { addToast } from "../features/ui/uiSlice";
 import type { Todo, CreateTodoData, UpdateTodoData } from "../schemas/todos";
 
 // Simple in-memory storage as fallback
@@ -56,6 +55,7 @@ class ApiService {
 
       return await response.json();
     } catch (error) {
+      console.log(error);
       // Fallback to in-memory data
       await new Promise((resolve) => setTimeout(resolve, 300)); // Simulate delay
 
@@ -127,6 +127,7 @@ class ApiService {
 
       return await response.json();
     } catch (error) {
+      console.log(error);
       // Fallback to in-memory storage
       await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -155,6 +156,7 @@ class ApiService {
 
       return await response.json();
     } catch (error) {
+      console.log(error);
       // Fallback to in-memory storage
       await new Promise((resolve) => setTimeout(resolve, 300));
 

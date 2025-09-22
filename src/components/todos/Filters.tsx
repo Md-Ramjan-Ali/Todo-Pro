@@ -5,7 +5,6 @@ import {
   setSortBy,
   clearFilters,
 } from '../../features/todos/todosSlice';
-// import { Search, Filter, X } from 'lucide-react';
 import { Search, X } from 'lucide-react';
 
 const Filters = () => {
