@@ -9,6 +9,7 @@ interface PaginationProps {
 }
 
 const Pagination = ({ onUpdate }: PaginationProps) => {
+  const { theme } = useAppSelector((state) => state.ui);
   const dispatch = useAppDispatch();
   const { filters } = useAppSelector((state) => state.todos);
   const [paginationData, setPaginationData] = useState({
@@ -74,8 +75,13 @@ const Pagination = ({ onUpdate }: PaginationProps) => {
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="text-sm text-gray-700 dark:text-gray-300">
+    <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" style={{
+      backgroundColor: theme === "dark" ? "#1f2937" : "white",
+      borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+    }}>
+      <div className="text-sm text-gray-700 dark:text-gray-300" style={{
+        color: theme === "dark" ? "white" : "#111827",
+      }}>
         Showing <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> to{' '}
         <span className="font-medium">{Math.min(currentPage * 10, paginationData.totalCount || 0)}</span> of{' '}
         <span className="font-medium">{paginationData.totalCount || 0}</span> results
@@ -86,6 +92,10 @@ const Pagination = ({ onUpdate }: PaginationProps) => {
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="p-2 rounded-md border border-gray-300 text-gray-400 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
+          style={{
+            backgroundColor: theme === "dark" ? "#1f2937" : "white",
+            borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+          }}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -108,6 +118,10 @@ const Pagination = ({ onUpdate }: PaginationProps) => {
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="p-2 rounded-md border border-gray-300 text-gray-400 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:hover:bg-gray-700"
+          style={{
+            backgroundColor: theme === "dark" ? "#1f2937" : "white",
+            borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+          }}
         >
           <ChevronRight className="w-4 h-4" />
         </button>

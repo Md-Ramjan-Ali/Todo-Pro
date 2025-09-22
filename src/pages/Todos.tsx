@@ -8,6 +8,7 @@ import TodoForm from '../components/todos/TodoForm';
 import { Plus } from 'lucide-react';
 
 const Todos = () => {
+  const { theme } = useAppSelector((state) => state.ui);
   const dispatch = useAppDispatch();
   const { selectedTodoId } = useAppSelector((state) => state.todos);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -26,7 +27,9 @@ const Todos = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{
+          color: theme === "dark" ? "white" : "#111827",
+        }}>
           My Todos
         </h1>
         <button

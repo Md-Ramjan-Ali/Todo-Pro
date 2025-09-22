@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppDispatch } from '../../hooks/redux';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { todoService } from '../../services/todoService';
 import { setSelectedTodo } from '../../features/todos/todosSlice';
 import { addToast } from '../../features/ui/uiSlice';
@@ -12,6 +12,7 @@ interface TodoItemProps {
 }
 
 const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
+  const { theme } = useAppSelector((state) => state.ui);
   const dispatch = useAppDispatch();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -53,7 +54,9 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow" style={{
+      backgroundColor: theme === "dark" ? "#1f2937" : "white",
+    }}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
@@ -67,17 +70,23 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
             )}
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2" style={{
+            color: theme === "dark" ? "white" : "#111827",
+          }}>
             {todo.title}
           </h3>
 
           {todo.description && (
-            <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm">
+            <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm" style={{
+              color: theme === "dark" ? "white" : "#111827",
+            }}>
               {todo.description}
             </p>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400" style={{
+            color: theme === "dark" ? "white" : "#111827",
+          }}>
             {todo.dueDate && (
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -103,7 +112,11 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
           <select
             value={todo.status}
             onChange={(e) => handleStatusChange(e.target.value as Todo['status'])}
-            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white" style={{
+              backgroundColor: theme === "dark" ? "#1f2937" : "white",
+              color: theme === "dark" ? "white" : "#111827",
+            }}
+            
             aria-label={`Change status for ${todo.title}`}
           >
             <option value="todo">To Do</option>
@@ -113,7 +126,9 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
 
           <button
             onClick={() => dispatch(setSelectedTodo(todo.id))}
-            className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" style={{
+              color: theme === "dark" ? "white" : "#111827",
+            }}
             aria-label={`Edit todo: ${todo.title}`}
           >
             <Edit3 className="w-4 h-4" />
@@ -122,7 +137,9 @@ const TodoItem = ({ todo, onUpdate }: TodoItemProps) => {
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 rounded" style={{
+              color: theme === "dark" ? "white" : "#111827",
+            }}
             aria-label={`Delete todo: ${todo.title}`}
           >
             <Trash2 className="w-4 h-4" />

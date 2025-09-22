@@ -7,17 +7,20 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ToastContainer from './components/ui/ToastContainer';
 import Layout from './components/ui/Layout';
 import Todos from './pages/Todos';
-// Add this import
-import ThemeTest from './components/ThemeTest';
+
 
 function App() {
   const { toasts } = useAppSelector((state) => state.ui);
+  const { theme } = useAppSelector((state) => state.ui);
 
   // Use the theme hook to handle theme logic
   useTheme();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen transition-colors duration-200 bg-white border-b border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700" style={{
+      backgroundColor: theme === "dark" ? "#1f2937" : "white",
+      borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+    }}>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -37,7 +40,6 @@ function App() {
         </Routes>
       </Router>
       <ToastContainer toasts={toasts} />
-      <ThemeTest />
     </div>
   );
 }

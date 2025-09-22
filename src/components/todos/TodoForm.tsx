@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { todoService } from '../../services/todoService';
 import { addToast } from '../../features/ui/uiSlice';
 import { createTodoSchema, type CreateTodoData, type Todo } from '../../schemas/todos';
-import { X, Calendar, Tag } from 'lucide-react';
+import { X } from 'lucide-react';
+import { useAppSelector } from '../../hooks/redux';
 
 interface TodoFormProps {
   todoId?: string; // Change from todo to todoId
@@ -15,12 +16,12 @@ interface TodoFormProps {
 const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTodo, setCurrentTodo] = useState<Todo | null>(null);
+  const { theme } = useAppSelector((state) => state.ui);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
     setValue,
     watch,
     reset: resetForm,
@@ -107,14 +108,24 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md" style={{
+        backgroundColor: theme === "dark" ? "#1f2937" : "white",
+      }}>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700" style={{
+          backgroundColor: theme === "dark" ? "#1f2937" : "white",
+          borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+        }}>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white" style={{
+            color: theme === "dark" ? "white" : "#111827",
+          }}>
             {todoId ? 'Edit Todo' : 'Create Todo'}
           </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            style={{
+              color: theme === "dark" ? "white" : "#111827",
+            }}
           >
             <X className="w-6 h-6" />
           </button>
@@ -122,13 +133,20 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              style={{
+                color: theme === "dark" ? "white" : "#111827",
+              }}>
               Title *
             </label>
             <input
               {...register('title')}
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                color: theme === "dark" ? "white" : "#111827",
+              }}
               placeholder="Enter todo title"
             />
             {errors.title && (
@@ -137,25 +155,39 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" 
+              style={{
+                color: theme === "dark" ? "white" : "#111827",
+              }}>
               Description
             </label>
             <textarea
               {...register('description')}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                borderColor: theme === "dark" ? "#374151" : "#e5e7eb",
+              }}
               placeholder="Enter todo description"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" 
+                style={{
+                  color: theme === "dark" ? "white" : "#111827",
+                }}>
                 Status
               </label>
               <select
                 {...register('status')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                style={{
+                  backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                  color: theme === "dark" ? "white" : "#111827",
+                }}
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -164,12 +196,19 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" 
+                style={{
+                  color: theme === "dark" ? "white" : "#111827",
+                }}>
                 Priority
               </label>
               <select
                 {...register('priority')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                style={{
+                  backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                  color: theme === "dark" ? "white" : "#111827",
+                }}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -179,18 +218,27 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" 
+              style={{
+                color: theme === "dark" ? "white" : "#111827",
+              }}>
               Due Date
             </label>
             <input
               {...register('dueDate')}
               type="date"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                color: theme === "dark" ? "white" : "#111827",
+              }}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" style={{
+              color: theme === "dark" ? "white" : "#111827",
+            }}>
               Tags
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -198,12 +246,19 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
                 <span
                   key={index}
                   className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full dark:bg-blue-900 dark:text-blue-300"
+                  style={{
+                    backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                    color: theme === "dark" ? "white" : "#111827",
+                  }}
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => removeTag(index)}
                     className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
+                    style={{
+                      color: theme === "dark" ? "white" : "#111827",
+                    }}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -214,6 +269,10 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
               type="text"
               placeholder="Add a tag and press Enter"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                color: theme === "dark" ? "white" : "#111827",
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -229,6 +288,10 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                color: theme === "dark" ? "white" : "#111827",
+              }}
             >
               Cancel
             </button>
@@ -236,6 +299,10 @@ const TodoForm = ({ todoId, onClose, onTodoChanged }: TodoFormProps) => {
               type="submit"
               disabled={isLoading}
               className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              style={{
+                backgroundColor: theme === "dark" ? "#1f2937" : "white",
+                color: theme === "dark" ? "white" : "#111827",
+              }}
             >
               {isLoading ? 'Saving...' : todoId ? 'Update' : 'Create'}
             </button>
