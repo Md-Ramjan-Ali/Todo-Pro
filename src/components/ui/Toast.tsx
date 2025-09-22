@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { X, CheckCircle, XCircle, Info } from 'lucide-react';
+import { useAppSelector } from '../../hooks/redux';
 
 interface ToastProps {
   id: string;
@@ -9,6 +10,7 @@ interface ToastProps {
 }
 
 const Toast = ({ id, type, message, onRemove }: ToastProps) => {
+   const { theme } = useAppSelector((state) => state.ui);
   useEffect(() => {
     const timer = setTimeout(() => {
       onRemove(id);
@@ -37,7 +39,10 @@ const Toast = ({ id, type, message, onRemove }: ToastProps) => {
       <div className="flex-1 mr-2">{message}</div>
       <button
         onClick={() => onRemove(id)}
-        className="text-gray-400 hover:text-gray-600"
+        className="text-gray-400 hover:text-gray-600" 
+        style={{
+          color: theme === "dark" ? "white" : "#111827",
+        }}
       >
         <X className="w-4 h-4" />
       </button>
