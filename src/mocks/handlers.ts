@@ -18,7 +18,7 @@ let nextId = 1;
 
 // Helper function to simulate API delay and random failures
 const simulateApiCall = async () => {
-  await delay(300 + Math.random() * 200); // 300-500ms delay
+  await delay(300 + Math.random() * 200); 
 
   // 10% chance of failure - return false instead of throwing error
   if (Math.random() < 0.1) {
@@ -79,6 +79,7 @@ export const handlers = [
   }),
 
   // Todo handlers
+  
   http.get("/todos", async ({ request }) => {
     console.log("GET /todos handler called");
 
